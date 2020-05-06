@@ -118,40 +118,42 @@ class MSE(Module):
 #        return dl_dx* (1/(torch.pow(torch.cosh(s),2)))   
 #               
 #    
-#class CrossEntropyLoss(Module):        
-#    def __init__(self):
-#        Module.__init__(self)
-#        
-#    def softmax(x):
-#        """
-#            Computes softmax with shift to be numerically stable for
-#            large numbers or floats takes exp(x-max(x)) instead of exp(x)
-#        """
-#            #this is really stablesoftmax(x)
-#            #rather than softamx(x)
-#        z = x- x.max()
-#        exps = torch.exp(z)
-#        return (exps/torch.sum(exps))
-#    
-#    def forward(self,x,t):
-#        """
-#            With pj = exp(aj)/sum(exp(ak))
-#            Loss = -Sum_j (yj) log(pj), 
-#            with t the target being the y in the formula
-#            and pj = softmax(x)_j
-#            log(p)*t does the element-wise product then we sum
-#        """
-#        p = self.softmax(x)
-#        sumResult = -torch.sum(torch.log(p)*t)
-#        return sumResult
-#    
-#    def backward(self,x,t):
-#        """
-#            computes dLoss 
-#            dl/dx_i = pi-yi from the slides
-#        """
-#        p = self.softmax(x)
-#        return p-t
+class CrossEntropyLoss(Module):        
+    def __init__(self):
+        Module.__init__(self)
+        
+    def softmax(self,x):
+        """
+            Computes softmax with shift to be numerically stable for
+            large numbers or floats takes exp(x-max(x)) instead of exp(x)
+        """
+            #this is really stablesoftmax(x)
+            #rather than softamx(x)
+        z = x- x.max()
+        exps = torch.exp(z)
+        return (exps/torch.sum(exps))
+    
+    def forward(self,x,t):
+        """
+            With pj = exp(aj)/sum(exp(ak))
+            Loss = -Sum_j (yj) log(pj), 
+            with t the target being the y in the formula
+            and pj = softmax(x)_j
+            log(p)*t does the element-wise product then we sum
+        """
+        p = self.softmax(x)
+        t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
+        sumResult = -torch.sum(torch.log(p)*t)
+        return sumResult
+    
+    def backward(self,x,t):
+        """
+            computes dLoss 
+            dl/dx_i = pi-yi from the slides
+        """
+        p = self.softmax(x)
+        t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
+        return p-t
 
 def convert_to_one_hot_labels(input, target):
     tmp = input.new_zeros(target.size(0), target.max() + 1)
