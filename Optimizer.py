@@ -9,7 +9,7 @@ class Optimizer():
         raise NotImplementedError
     
 class SGD(Optimizer):
-    def __init__(self, model_parameters, eta= 1e-1):
+    def __init__(self, model_parameters, eta=1e-1):
         super(SGD, self).__init__()
         """
             Model parameters to be optimized over (i.e. w, dw, b, db)
@@ -21,9 +21,8 @@ class SGD(Optimizer):
         
     def step(self):
         """
-            In param, we have p[0]= w, p[1] = dw
-            p[2] = b, p[3] = db then we need to update par[0] = par[0]-eta*par[1],
-            i.e. w(t+1) = w(t) - eta * dl_dw
+            In param, we have p[0] = parameter, p[1] = dloss/dp
+            i.e. p(t+1) = p(t) - eta * dl_dp
         """
         for p in self.parameters: 
             p[0] = p[0] - self.eta * p[1]
