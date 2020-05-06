@@ -18,15 +18,20 @@ class SGD(Optimizer):
         """
         self.parameters = model_parameters
         self.eta = eta
-        
+        #print("HERE IS PRINT BEFORE UPDATE \n",self.parameters[0][0][0])
     def step(self):
         """
             In param, we have p[0] = parameter, p[1] = dloss/dp
             i.e. p(t+1) = p(t) - eta * dl_dp
         """
         for p in self.parameters: 
+            #print("before update",p[0][0])
             p[0] = p[0] - self.eta * p[1]
-            
+            #print("Has this been modified properly",p[0][0])
+        #print("SECOND PRINT HERE \n",self.parameters[0][0][0])
+        #output = self.parameters
+        #return output
+
 #class SGD_momentum(Optimizer):
 #    
 #    def __init__(self,model_parameters,eta=1e-1,gamma = 0.5):

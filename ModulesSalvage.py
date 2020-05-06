@@ -13,6 +13,9 @@ class Module() :
     
     def param(self):
         pass
+    
+    def zero_grad(self):
+        pass
         
     def __call__(self, *input):
         return self.forward(*input)
@@ -37,9 +40,6 @@ class Linear(Module):
         self.db = torch.zeros(out_dim)
         self.current = torch.empty(1,1)
     
-    def param(self):
-        return [[self.w, self.dw], [self.b, self.db]]
-        
     def forward(self,x):
         """
             results of FW pass of layer, returns s = x*w + b
@@ -47,25 +47,11 @@ class Linear(Module):
         """
         self.current = x
         return x.mm(self.w)+self.b
-    
-    #def backward(self, x, dl_ds):
-    #    """
-    #        Backward pass, see practical 03 and slide 9,11 of course 3.6
-    #        Accumulates gradient according to chain rule, with mat product.
-    #        dl_ds is the derivative of loss wrt to s = x*w + b
-    #        dl_ds = dl_dx.mul(sigma'(s)) which is given to him the
-    #        backward of activation functions.
-    #    """
-    #    self.dw.add_(dl_ds.view(-1, 1).mm(x.view(1, -1)))
-    #    self.db.add_(dl_ds.view(-1))
-    #    dl_dx_prev = self.w.t().mm(dl_ds)
-    #    return dl_dx_prev
    
     def backward(self, dl_ds):
-        
-        self.dw = dl_ds.mm(self.current.view(1, -1))
-        self.db = dl_ds
-        return self.w.t().mm(dl_ds)
+        self.dw = self.current.t().mm(dl_ds)
+        self.db = dl_ds.mean(0)
+        return dl_ds.mm(self.w.t())
     
     def zero_grad(self):
         """
@@ -73,68 +59,12 @@ class Linear(Module):
         """
         self.dw.zero_()
         self.db.zero_()
-        
-class Sequential(Module):
-    """
-        An instance of the sequential class contains the Modules passed to it as arguments.
-        For example, pass linear, relu to it, it will be stored within its attribute "members"
-        the attribute memory is used to save the operations in the order in which they were done
-        to allow backprop (?)
-    """
-    def __init__(self,*Modules):
-        super(Sequential, self).__init__()
-        self.members = Modules
-        
-        self.parameters = []
-        for module in self.members:
-            if module.param() is not None:
-                for p in module.param():
-                    self.parameters.append(p)
-        
-        self.memory = []
-        self.lossmemory = []
-        
+    
     def param(self):
-        
-        return self.parameters
-    
-    def forward(self, x):
-        #MUST ADD THINGS TO MEMORY AFTER OPERATION.
-        # x is the input to which the operations of each module must be applied in the right order.
-        #Does this need to save the first entry ?
-        #It should save the value at each step (ex what is x1, s1, sigma(s1), etc.)
-        #this is done in the 
-        #Should backprop also have another memory to save the backprop'd gradient and what else? Loss??
-        
-        for module in self.members:
-            x = module(x)
-            self.memory.append(x)
-        return x
-        
-    #def backward(self, out, dl):
-    #    #must enumerate backwards in the list in memory. 
-    #    #what should this do ?
-    #    #should save all the losses at each operation?
-    #    #backward (from Module) takes as argument : Z, dloss, where z is a
-    #    #can use for reversed(...) or use for i in () then use memory[-1-i] to iterate backward.
-    #    self.lossmemory.append(dl)
-    #    for idx, module in reversed(enumerate(self.members)):
-    #        #the input for backward is the value saved in memory 
-    #        dl = module.backward(self.memory[i],dl)
-    #        self.lossmemory.append(dl)
-    #    #reversed loss memory
-    #    return self.lossmemory[::-1]
-    
-    def backward(self, dl_dx):
-        for module in reversed(self.members):
-            module.backward(dl_dx)
-    
-    def zero_grad(self):
-        #should only do zero grad for linear modules. 
-        #If called on activation modules (like tanh), that does not have it specified,
-        #it should call the function definition from the mother class in which case it will pass.
-        for module in self.members :
-            module.zero_grad()
+        #print("ARE THESE ZEROS --------------------- \n",self.dw)
+        return [[self.w, self.dw], [self.b, self.db]]
+            
+
         
 #ACTIVATION FUNCTIONS
 class ReLu(Module):
@@ -142,9 +72,10 @@ class ReLu(Module):
         super(ReLu, self).__init__()
         self.current = torch.empty(1,1)
     
-    def forward(self, x):
-        self.current = x
-        return torch.max(x,torch.zeros(x.size()))
+    def forward(self, s):
+        self.current = s
+        #print("RELU",self.current)
+        return torch.max(s,torch.zeros(s.size()))
     
     def backward(self, dl_dx):
         """
@@ -154,21 +85,26 @@ class ReLu(Module):
             this should work as it gives a logical tensor then into float
             not sure about dimensions.....
         """
-        return dl_dx*(self.current>0).view(-1,1).long()
+        #print("HERE currentsize",self.current.size())
+        #print("DLDX-1 size",dl_dx.size())
+        #print("RELU OUTPUT SIZE",(dl_dx*(self.current>0).float()).size())
+        return dl_dx*(self.current>0).float()
     
 class MSE(Module):
     """ SEE PRACTICAL 03 UPDATE DOC LATER"""
     def __init__(self):
         super(MSE, self).__init__()
     
-    def forward(self, x, t):
+    def forward(self,x,t):
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         return (x - t).pow(2).sum()
     
     def backward(self, x, t):
         #This is dl_dx. (dloss wrt to x for MSE loss is 2(x-t))
+        t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         return 2 * (x - t)
     # MAYBEWRONG UPDATE THIS LATER
+    
         
 #class Tanh(Module):
 #    def __init__(self):
