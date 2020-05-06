@@ -35,6 +35,7 @@ class Linear(Module):
         self.b = torch.empty(out_dim).normal_(0,std)
         self.dw = torch.zeros(in_dim,out_dim)
         self.db = torch.zeros(out_dim)
+        self.current = torch.empty(1,1)
     
     def param(self):
         return [[self.w, self.dw], [self.b, self.db]]
@@ -44,21 +45,27 @@ class Linear(Module):
             results of FW pass of layer, returns s = x*w + b
             using formula from Practical 03
         """
-        s = x.mm(self.w)+self.b
-        return s
+        self.current = x
+        return x.mm(self.w)+self.b
     
-    def backward(self,x,dl_ds):
-        """
-            Backward pass, see practical 03 and slide 9,11 of course 3.6
-            Accumulates gradient according to chain rule, with mat product.
-            dl_ds is the derivative of loss wrt to s = x*w + b
-            dl_ds = dl_dx.mul(sigma'(s)) which is given to him the
-            backward of activation functions.
-        """
-        self.dw.add_(dl_ds.view(-1, 1).mm(x.view(1, -1)))
-        self.db.add_(dl_ds.view(-1))
-        dl_dx_prev = self.w.t().mm(dl_ds)
-        return dl_dx_prev
+    #def backward(self, x, dl_ds):
+    #    """
+    #        Backward pass, see practical 03 and slide 9,11 of course 3.6
+    #        Accumulates gradient according to chain rule, with mat product.
+    #        dl_ds is the derivative of loss wrt to s = x*w + b
+    #        dl_ds = dl_dx.mul(sigma'(s)) which is given to him the
+    #        backward of activation functions.
+    #    """
+    #    self.dw.add_(dl_ds.view(-1, 1).mm(x.view(1, -1)))
+    #    self.db.add_(dl_ds.view(-1))
+    #    dl_dx_prev = self.w.t().mm(dl_ds)
+    #    return dl_dx_prev
+   
+    def backward(self, dl_ds):
+        
+        self.dw = dl_ds.mm(self.current.view(1, -1))
+        self.db = dl_ds
+        return self.w.t().mm(dl_ds)
     
     def zero_grad(self):
         """
@@ -91,7 +98,7 @@ class Sequential(Module):
         
         return self.parameters
     
-    def forward(self,x):
+    def forward(self, x):
         #MUST ADD THINGS TO MEMORY AFTER OPERATION.
         # x is the input to which the operations of each module must be applied in the right order.
         #Does this need to save the first entry ?
@@ -104,19 +111,23 @@ class Sequential(Module):
             self.memory.append(x)
         return x
         
-    def backward(self, out, dl):
-        #must enumerate backwards in the list in memory. 
-        #what should this do ?
-        #should save all the losses at each operation?
-        #backward (from Module) takes as argument : Z, dloss, where z is a
-        #can use for reversed(...) or use for i in () then use memory[-1-i] to iterate backward.
-        self.lossmemory.append(dl)
-        for idx, module in reversed(enumerate(self.members)):
-            #the input for backward is the value saved in memory 
-            dl = module.backward(self.memory[i],dl)
-            self.lossmemory.append(dl)
-        #reversed loss memory
-        return self.lossmemory[::-1]
+    #def backward(self, out, dl):
+    #    #must enumerate backwards in the list in memory. 
+    #    #what should this do ?
+    #    #should save all the losses at each operation?
+    #    #backward (from Module) takes as argument : Z, dloss, where z is a
+    #    #can use for reversed(...) or use for i in () then use memory[-1-i] to iterate backward.
+    #    self.lossmemory.append(dl)
+    #    for idx, module in reversed(enumerate(self.members)):
+    #        #the input for backward is the value saved in memory 
+    #        dl = module.backward(self.memory[i],dl)
+    #        self.lossmemory.append(dl)
+    #    #reversed loss memory
+    #    return self.lossmemory[::-1]
+    
+    def backward(self, dl_dx):
+        for module in reversed(self.members):
+            module.backward(dl_dx)
     
     def zero_grad(self):
         #should only do zero grad for linear modules. 
@@ -129,11 +140,13 @@ class Sequential(Module):
 class ReLu(Module):
     def __init__(self):
         super(ReLu, self).__init__()
+        self.current = torch.empty(1,1)
     
-    def forward(self,x):
+    def forward(self, x):
+        self.current = x
         return torch.max(x,torch.zeros(x.size()))
     
-    def backward(self,s,dl_dx):
+    def backward(self, dl_dx):
         """
             Def of backprop : dl_ds = dl_dx * dsigma(s)
             dsigma for relu is f : (1, x>0, 
@@ -141,14 +154,14 @@ class ReLu(Module):
             this should work as it gives a logical tensor then into float
             not sure about dimensions.....
         """
-        return dl_dx * (s>0).float()
+        return dl_dx*(self.current>0).view(-1,1).long()
     
 class MSE(Module):
     """ SEE PRACTICAL 03 UPDATE DOC LATER"""
     def __init__(self):
         super(MSE, self).__init__()
     
-    def forward(self,x,t):
+    def forward(self, x, t):
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         return (x - t).pow(2).sum()
     
@@ -203,7 +216,7 @@ class MSE(Module):
 #        """
 #        p = self.softmax(x)
 #        return p-t
-#    
+
 def convert_to_one_hot_labels(input, target):
     tmp = input.new_zeros(target.size(0), target.max() + 1)
     tmp.scatter_(1, target.view(-1, 1), 1.0)
