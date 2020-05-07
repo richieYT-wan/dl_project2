@@ -9,15 +9,17 @@ class Optimizer():
         raise NotImplementedError
     
 class SGD(Optimizer):
-    def __init__(self, model_parameters, eta=1e-1):
+    def __init__(self, sequence, eta=1e-1):
         super(SGD, self).__init__()
         """
             Model parameters to be optimized over (i.e. w, dw, b, db)
             lr the learning rate to be passed as argument, 1e-1 by default
             No momentum
         """
-        self.parameters = model_parameters
+        #self.parameters = model_params
         self.eta = eta
+        self.sequence = sequence
+        self.parameters = sequence.param()
         
     def step(self):
         """
@@ -25,7 +27,9 @@ class SGD(Optimizer):
             i.e. p(t+1) = p(t) - eta * dl_dp
         """
         for p in self.parameters: 
-            p[0] = p[0] - self.eta * p[1]
+            p[0] = p[0] + 25
+        
+        self.sequence.update_params(self.parameters)
             
 #class SGD_momentum(Optimizer):
 #    
