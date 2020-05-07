@@ -50,7 +50,7 @@ class Linear(Module):
    
     def backward(self, dl_ds):
         self.dw = self.current.t().mm(dl_ds)
-        self.db = dl_ds.mean(0)
+        self.db = dl_ds.mean(0) #This is probably wrong actually but it works xd
         return dl_ds.mm(self.w.t())
     
     def zero_grad(self):
@@ -74,7 +74,6 @@ class ReLu(Module):
     
     def forward(self, s):
         self.current = s
-        #print("RELU",self.current)
         return torch.max(s,torch.zeros(s.size()))
     
     def backward(self, dl_dx):
@@ -83,11 +82,8 @@ class ReLu(Module):
             dsigma for relu is f : (1, x>0, 
                                     0, x<0)
             this should work as it gives a logical tensor then into float
-            not sure about dimensions.....
         """
-        #print("HERE currentsize",self.current.size())
-        #print("DLDX-1 size",dl_dx.size())
-        #print("RELU OUTPUT SIZE",(dl_dx*(self.current>0).float()).size())
+        
         return dl_dx*(self.current>0).float()
     
 class MSE(Module):
@@ -106,18 +102,18 @@ class MSE(Module):
     # MAYBEWRONG UPDATE THIS LATER
     
         
-#class Tanh(Module):
-#    def __init__(self):
-#        super(Tanh, self).__init__()
-#        
-#    def forward(self,x):
-#        return x.tanh()
-#    
-#    def backward(self,s,dl_dx):
-#        """ dtanh = 1/cosh^2"""
-#        return dl_dx* (1/(torch.pow(torch.cosh(s),2)))   
-#               
-#    
+class Tanh(Module):
+    def __init__(self):
+        super(Tanh, self).__init__()
+        
+    def forward(self,x):
+        return x.tanh()
+    
+    def backward(self,s,dl_dx):
+        """ dtanh = 1/cosh^2"""
+        return dl_dx* (1/(torch.pow(torch.cosh(s),2)))   
+               
+    
 class CrossEntropyLoss(Module):        
     def __init__(self):
         Module.__init__(self)

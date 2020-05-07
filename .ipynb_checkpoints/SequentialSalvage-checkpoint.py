@@ -26,23 +26,18 @@ class Sequential():
         #MUST ADD THINGS TO MEMORY AFTER OPERATION.
         # x is the input to which the operations of 
         #each module must be applied in the right order.
-        #Does this need to save the first entry ?
         #It should save the value at each step (ex what is x1, s1, sigma(s1), etc.)
-        #this is done in the 
+        #this is done using self.memory and module.current
         
-        #print("SEQ FWD cURRENT SIZE :")
         for index, module in enumerate(self.members):
-            
+            #re-updates the modules' parameters, circumvents issues created by the 
+            #backward which re-updates the parameters (to store gradient in parameters of Sequential)
             if module.param() is not None : 
                 module.w = self.param()[index][0]
                 module.b = self.param()[index+1][0]
                 
             x = module(x)
             self.memory.append(module.current)
-            #print(module.current.size())
-        #print("SEQ FWD MEMORY SIZE")
-        #for index, _ in enumerate(self.memory):
-        #    print(self.memory[index].size())
         return x
         
     
