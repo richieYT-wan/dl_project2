@@ -60,9 +60,9 @@ class Linear(Module):
         self.dw.zero_()
         self.db.zero_()
     
-    def step(self):
-        self.w = self.w - 9e-5 * self.dw
-        self.b = self.b - 9e-5 * self.db
+    def step(self, eta=1e-4, wd=6e-5):
+        self.w = self.w - eta * self.dw - 2*wd*self.w
+        self.b = self.b - eta * self.db - 2*wd*self.b
         
 class Sequential(Module):
     """
@@ -112,7 +112,6 @@ class Sequential(Module):
             if module.param() is not None:
                 module.step()
                     
-#ACTIVATION FUNCTIONS
 class ReLu(Module):
     def __init__(self):
         super(ReLu, self).__init__()
@@ -146,18 +145,19 @@ class MSE(Module):
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         return 2 * (x - t)
         
-#class Tanh(Module):
-#    def __init__(self):
-#        super(Tanh, self).__init__()
-#        
-#    def forward(self,x):
-#        return x.tanh()
-#    
-#    def backward(self,s,dl_dx):
-#        """ dtanh = 1/cosh^2"""
-#        return dl_dx* (1/(torch.pow(torch.cosh(s),2)))   
-#               
-#    
+class Tanh(Module):
+    def __init__(self):
+        super(Tanh, self).__init__()
+        self.current = torch.empty(1,1)
+        
+    def forward(self, x):
+        self.current = x
+        return x.tanh()
+    
+    def backward(self, dl_dx):
+        """ dtanh = 1/cosh^2"""
+        return dl_dx*(1/(torch.pow(torch.cosh(self.current),2)))   
+                   
 class CrossEntropyLoss(Module):        
     def __init__(self):
         super(CrossEntropyLoss, self).__init__()
@@ -194,7 +194,7 @@ class CrossEntropyLoss(Module):
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         p = self.softmax(x)
         return p - t
-
+    
 def convert_to_one_hot_labels(input, target):
     tmp = input.new_zeros(target.size(0), target.max() + 1)
     tmp.scatter_(1, target.view(-1, 1), 1.0)

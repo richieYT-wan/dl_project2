@@ -9,8 +9,8 @@ def plot_data(data, labels):
     
     plt.figure(figsize=(6,6))
     
-    plt.scatter(data_out[:,0],data_out[:,1])
-    plt.scatter(data_in[:,0], data_in[:,1])
+    plt.scatter(data_out[:,0],data_out[:,1], color='k')
+    plt.scatter(data_in[:,0], data_in[:,1], color='r')
     plt.show()
     
 def generate_disc_set(nb_sample, show_data=False):
