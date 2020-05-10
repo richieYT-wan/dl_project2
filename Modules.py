@@ -60,7 +60,7 @@ class Linear(Module):
         self.dw.zero_()
         self.db.zero_()
     
-    def step(self, eta=1e-4, wd=6e-5):
+    def step(self, eta=1e-4, wd=3e-5):
         self.w = self.w - eta * self.dw - 2*wd*self.w
         self.b = self.b - eta * self.db - 2*wd*self.b
         
