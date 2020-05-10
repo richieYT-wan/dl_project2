@@ -33,7 +33,20 @@ def normalize_data(data, data_test):
     data_test.sub_(mean).div_(std)
     return data, data_test
 
-def train_model(model, criterion, optimizer, data, target, nb_epochs, mini_batch_size):
+def compute_nb_errors(model, data_input, data_target, mini_batch_size):
+
+    nb_data_errors = 0
+
+    for b in range(0, data_input.size(0), mini_batch_size):
+        output = model(data_input.narrow(0, b, mini_batch_size))
+        _, predicted_classes = torch.max(output, 1)
+        for k in range(mini_batch_size):
+            if data_target[b + k] != predicted_classes[k]:
+                nb_data_errors = nb_data_errors + 1
+
+    return nb_data_errors
+
+def train_model(model, criterion, optimizer, data, target, data_test, target_test, nb_epochs, mini_batch_size):
     losses = []
 
     for e in range(nb_epochs):
@@ -52,18 +65,9 @@ def train_model(model, criterion, optimizer, data, target, nb_epochs, mini_batch
             optimizer.step()
             
         losses.append(sum_loss)
+
+    print('TRAIN ERROR = {:.2f}%'.format(compute_nb_errors(model, data, target, mini_batch_size) / data.size(0) * 100))
+    print('TEST ERROR = {:.2f}%'.format(compute_nb_errors(model, data_test, target_test, mini_batch_size) / data_test.size(0) * 100))
     return losses
 
 
-def compute_nb_errors(model, data_input, data_target, mini_batch_size):
-
-    nb_data_errors = 0
-
-    for b in range(0, data_input.size(0), mini_batch_size):
-        output = model(data_input.narrow(0, b, mini_batch_size))
-        _, predicted_classes = torch.max(output, 1)
-        for k in range(mini_batch_size):
-            if data_target[b + k] != predicted_classes[k]:
-                nb_data_errors = nb_data_errors + 1
-
-    return nb_data_errors
