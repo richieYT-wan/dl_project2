@@ -84,13 +84,6 @@ class Sequential(Module):
         return parameters
     
     def forward(self, x):
-        #MUST ADD THINGS TO MEMORY AFTER OPERATION.
-        # x is the input to which the operations of each module must be applied in the right order.
-        #Does this need to save the first entry ?
-        #It should save the value at each step (ex what is x1, s1, sigma(s1), etc.)
-        #this is done in the 
-        #Should backprop also have another memory to save the backprop'd gradient and what else? Loss??
-        
         for module in self.members:
             x = module(x)
         return x
@@ -100,9 +93,6 @@ class Sequential(Module):
             dl_dx = module.backward(dl_dx)
     
     def zero_grad(self):
-        #should only do zero grad for linear modules. 
-        #If called on activation modules (like tanh), that does not have it specified,
-        #it should call the function definition from the mother class in which case it will pass.
         for module in self.members:
             if module.param() is not None:
                 module.zero_grad()
@@ -141,7 +131,6 @@ class MSE(Module):
         return (x - t).pow(2).sum()
     
     def backward(self, x, t):
-        #This is dl_dx. (dloss wrt to x for MSE loss is 2(x-t))
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         return 2 * (x - t)
         
@@ -158,17 +147,15 @@ class Tanh(Module):
         """ dtanh = 1/cosh^2"""
         return dl_dx*(1/(torch.pow(torch.cosh(self.current),2)))   
                    
-class CrossEntropyLoss(Module):        
+class CrossEntropy(Module):        
     def __init__(self):
-        super(CrossEntropyLoss, self).__init__()
+        super(CrossEntropy, self).__init__()
         
     def softmax(self, x):
         """
             Computes softmax with shift to be numerically stable for
             large numbers or floats takes exp(x-max(x)) instead of exp(x)
         """
-            #this is really stablesoftmax(x)
-            #rather than softamx(x)
         z = x - x.max()
         exps = torch.exp(z)
         return (exps/torch.sum(exps))
