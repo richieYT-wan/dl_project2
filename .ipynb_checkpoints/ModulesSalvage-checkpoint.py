@@ -50,7 +50,7 @@ class Linear(Module):
    
     def backward(self, dl_ds):
         self.dw = self.current.t().mm(dl_ds)
-        self.db = dl_ds.mean(0)
+        self.db = dl_ds.mean(0) #this works.
         return dl_ds.mm(self.w.t())
     
     def zero_grad(self):
@@ -61,7 +61,6 @@ class Linear(Module):
         self.db.zero_()
     
     def param(self):
-        #print("ARE THESE ZEROS --------------------- \n",self.dw)
         return [[self.w, self.dw], [self.b, self.db]]
             
 
@@ -74,7 +73,6 @@ class ReLu(Module):
     
     def forward(self, s):
         self.current = s
-        #print("RELU",self.current)
         return torch.max(s,torch.zeros(s.size()))
     
     def backward(self, dl_dx):
@@ -83,11 +81,8 @@ class ReLu(Module):
             dsigma for relu is f : (1, x>0, 
                                     0, x<0)
             this should work as it gives a logical tensor then into float
-            not sure about dimensions.....
         """
-        #print("HERE currentsize",self.current.size())
-        #print("DLDX-1 size",dl_dx.size())
-        #print("RELU OUTPUT SIZE",(dl_dx*(self.current>0).float()).size())
+        
         return dl_dx*(self.current>0).float()
     
 class MSE(Module):
@@ -103,21 +98,22 @@ class MSE(Module):
         #This is dl_dx. (dloss wrt to x for MSE loss is 2(x-t))
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         return 2 * (x - t)
-    # MAYBEWRONG UPDATE THIS LATER
     
         
-#class Tanh(Module):
-#    def __init__(self):
-#        super(Tanh, self).__init__()
-#        
-#    def forward(self,x):
-#        return x.tanh()
-#    
-#    def backward(self,s,dl_dx):
-#        """ dtanh = 1/cosh^2"""
-#        return dl_dx* (1/(torch.pow(torch.cosh(s),2)))   
-#               
-#    
+class Tanh(Module):
+    def __init__(self):
+        super(Tanh, self).__init__()
+        self.current = torch.empty(1,1)
+        
+    def forward(self,x):
+        self.current = x
+        return x.tanh()
+    
+    def backward(self,dl_dx):
+        """ dtanh = 1/cosh^2"""
+        return dl_dx* (1/(torch.pow(torch.cosh(self.current),2)))   
+               
+    
 class CrossEntropyLoss(Module):        
     def __init__(self):
         Module.__init__(self)
@@ -129,7 +125,7 @@ class CrossEntropyLoss(Module):
         """
             #this is really stablesoftmax(x)
             #rather than softamx(x)
-        z = x- x.max()
+        z = x-x.max()
         exps = torch.exp(z)
         return (exps/torch.sum(exps))
     
@@ -143,7 +139,7 @@ class CrossEntropyLoss(Module):
         """
         p = self.softmax(x)
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
-        sumResult = -torch.sum(torch.log(p)*t)
+        sumResult = -torch.sum(torch.log(p)*t).div(p.size(0))
         return sumResult
     
     def backward(self,x,t):
@@ -153,9 +149,10 @@ class CrossEntropyLoss(Module):
         """
         p = self.softmax(x)
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
-        return p-t
+        return -(p-t)
 
 def convert_to_one_hot_labels(input, target):
     tmp = input.new_zeros(target.size(0), target.max() + 1)
     tmp.scatter_(1, target.view(-1, 1), 1.0)
     return tmp
+
