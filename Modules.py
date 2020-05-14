@@ -84,7 +84,42 @@ class ReLu(Module):
         """
         
         return dl_dx*(self.current>0).float()
+        
+class Tanh(Module):
+    def __init__(self):
+        super(Tanh, self).__init__()
+        self.current = torch.empty(1,1)
+        
+    def forward(self,s):
+        self.current = s
+        return s.tanh()
     
+    def backward(self,dl_dx):
+        """ dtanh = 1/cosh^2"""
+        return dl_dx* (1/(torch.pow(torch.cosh(self.current),2)))   
+               
+class Softmax(Module):
+    def __init__(self):
+        super(Softmax,self).__init__()
+        self.current = torch.empty(1,1)
+        
+    def forward(self,s):
+        """
+            Computes softmax with shift to be numerically stable for
+            large numbers or floats takes exp(x-max(x)) instead of exp(x)
+        """
+        maxVal,_ =torch.max(s,1,keepdim=True)
+        z = s- maxVal
+        self.current=s #Should this be "= z" instead?
+        exps = torch.exp(z)
+        Sum = exps.sum(1,keepdim=True)
+        return (exps/Sum)
+    
+    def backward(self,dl_dx):
+        
+        return dl_dx*(self.forward(self.current)-(self.forward(self.current)).pow(2))
+    
+#----------------Loss criterions---------------
 class MSE(Module):
     """ SEE PRACTICAL 03 UPDATE DOC LATER"""
     def __init__(self):
@@ -99,21 +134,7 @@ class MSE(Module):
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
         return 2 * (x - t)
     
-        
-class Tanh(Module):
-    def __init__(self):
-        super(Tanh, self).__init__()
-        self.current = torch.empty(1,1)
-        
-    def forward(self,x):
-        self.current = x
-        return x.tanh()
-    
-    def backward(self,dl_dx):
-        """ dtanh = 1/cosh^2"""
-        return dl_dx* (1/(torch.pow(torch.cosh(self.current),2)))   
-               
-    
+
 class CrossEntropyLoss(Module):        
     def __init__(self):
         Module.__init__(self)
@@ -123,11 +144,11 @@ class CrossEntropyLoss(Module):
             Computes softmax with shift to be numerically stable for
             large numbers or floats takes exp(x-max(x)) instead of exp(x)
         """
-            #this is really stablesoftmax(x)
-            #rather than softamx(x)
-        z = x-x.max()
+        maxVal,_ =torch.max(x,1,keepdim=True)
+        z = x- maxVal
         exps = torch.exp(z)
-        return (exps/torch.sum(exps))
+        Sum = exps.sum(1,keepdim=True)
+        return (exps/Sum)
     
     def forward(self,x,t):
         """
@@ -139,7 +160,7 @@ class CrossEntropyLoss(Module):
         """
         p = self.softmax(x)
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
-        sumResult = -torch.sum(torch.log(p)*t).div(p.size(0))
+        sumResult = -torch.sum(p.log()*t)
         return sumResult
     
     def backward(self,x,t):
@@ -149,7 +170,7 @@ class CrossEntropyLoss(Module):
         """
         p = self.softmax(x)
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
-        return -(p-t)
+        return (p-t)
 
 def convert_to_one_hot_labels(input, target):
     tmp = input.new_zeros(target.size(0), target.max() + 1)

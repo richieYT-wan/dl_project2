@@ -40,7 +40,7 @@ class SGD(Optimizer):
 #        self.wd = wd
 #        #Initially, for t = 0, the momentum is zero as it has not moved yet.
 #        #then at each step, "previous" will be updated.
-#        self.previous = torch.empty(1,1)
+#        self.previous_w = model_parameters.zero
 #    
 #    def step(self):
 #        print(self.previous)

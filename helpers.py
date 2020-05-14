@@ -81,6 +81,8 @@ def train_model_SGD(model, criterion,
         
     # Train loss and test acc plot 
     if plot_loss:
+        title = str(criterion)[str(criterion).find('.')+1:str(criterion).find(" ")]
+        title = "Loss and accuracy for criterion = "+title
         fig, ax1 = plt.subplots(figsize=(6,6))
     
         ax1.set_xlabel('Epochs')
@@ -96,6 +98,7 @@ def train_model_SGD(model, criterion,
         plts = plt1+plt2
         labs = [p.get_label() for p in plts]
         plt.legend(plts, labs, loc='center right')
+        plt.title(title)
         plt.show()
     return losses, test_accs
             
