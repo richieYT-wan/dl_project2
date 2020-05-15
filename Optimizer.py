@@ -13,8 +13,7 @@ class SGD(Optimizer):
         super(SGD, self).__init__()
         """
             Model parameters to be optimized over (i.e. w, dw, b, db)
-            lr the learning rate to be passed as argument, 1e-1 by default
-            No momentum
+            lr the learning rate to be passed as argument, 1e-4 by default
         """
         self.parameters = model_parameters
         self.eta = eta

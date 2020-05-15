@@ -34,16 +34,38 @@ def train_model_SGD(model, criterion,
                     mini_batch_size, nb_epochs, eta = 1e-4, wd = None, 
                     momentum = False, adaptive = False,
                     plot_loss = False, plot_points = False):
-    
+    """
+        Function to train a given model, criterion.
+        Inputs: 
+            model : a Sequential object containing its modules [Sequential]
+            criterion : Criterion used for loss. (Either MSE or CrossEntropyLoss) [Loss module]
+            train_input, train_target : Input tensors and target tensors for training [Tensors]
+            test_input, test target : Input tensors and target tensors for validation [Tensors]
+            
+            mini_batch_size, nb_epochs : Batch size and epochs used for training [int]
+            eta, wd : Learning rate, Weight Decay used for training [float]
+            
+            Adaptive : Decay of learning rate over nb_epochs/5 [float]
+                       Used to have an adaptive learning rate which decays to stabilize training.
+                       Typical value for adaptive : 0.7 to 0.9
+                       Allows faster training and test error to stabilize.
+                       
+            plot_loss : Whether the loss and accuracy should be plotted at the end. [Bool] 
+            plot_points : Whether the data_points and predictions should be plotted [Bool]
+                
+    """
     losses = []
     test_accs = []
-    #train
     for e in range(nb_epochs):
+        
+        #train
         sum_loss = 0
         if adaptive:
-            epochs_drop = 50.0
+            #Every nb_epochs/5, the learning rate is divided
+            epochs_drop = nb_epochs/5
             eta = eta * math.pow(adaptive,math.floor((1+e)/epochs_drop))
-            
+        
+        #Random sampling
         for b in list(torch.utils.data.BatchSampler(torch.utils.data.RandomSampler(range(train_input.size(0))),batch_size=mini_batch_size, drop_last=False)):
             output = model(train_input[b])
             loss = criterion(output, train_target[b])
@@ -57,6 +79,7 @@ def train_model_SGD(model, criterion,
             sum_loss += loss.item()
     
         losses.append(sum_loss)
+        
         #test
         sum_error = 0
         predicted_test_classes = []
@@ -73,7 +96,7 @@ def train_model_SGD(model, criterion,
         
         test_accs.append((100 - ((100 * sum_error) / test_input.size(0))))
         
-        # plot
+        #plot
         if plot_points:
             predicted_test_classes = torch.cat(predicted_test_classes, dim=0)
             data_plot = torch.cat(data_plot, dim=0)
