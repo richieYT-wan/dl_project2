@@ -32,7 +32,7 @@ def generate_disc_set(nb_sample, show_data=False):
 def train_model_SGD(model, criterion, 
                     train_input, train_target, test_input, test_target,
                     mini_batch_size, nb_epochs, eta = 1e-4, wd = None, 
-                    momentum = False,
+                    momentum = False, adaptive = False,
                     plot_loss = False, plot_points = False):
     
     losses = []
@@ -40,6 +40,10 @@ def train_model_SGD(model, criterion,
     #train
     for e in range(nb_epochs):
         sum_loss = 0
+        if adaptive:
+            epochs_drop = 50.0
+            eta = eta * math.pow(adaptive,math.floor((1+e)/epochs_drop))
+            
         for b in list(torch.utils.data.BatchSampler(torch.utils.data.RandomSampler(range(train_input.size(0))),batch_size=mini_batch_size, drop_last=False)):
             output = model(train_input[b])
             loss = criterion(output, train_target[b])
@@ -82,7 +86,10 @@ def train_model_SGD(model, criterion,
     # Train loss and test acc plot 
     if plot_loss:
         title = str(criterion)[str(criterion).find('.')+1:str(criterion).find(" ")]
-        title = "Loss and accuracy for criterion = "+title
+        title = "Criterion : "+title+" Adaptive: {}".format(adaptive)
+        title2 = str(model.members[-1])[str(model.members[-1]).find('.')+1:str(model.members[-1]).find(" ")]
+        title2 = "\n Final activation :"+title2
+        title+title2
         fig, ax1 = plt.subplots(figsize=(6,6))
     
         ax1.set_xlabel('Epochs')
@@ -98,7 +105,7 @@ def train_model_SGD(model, criterion,
         plts = plt1+plt2
         labs = [p.get_label() for p in plts]
         plt.legend(plts, labs, loc='center right')
-        plt.title(title)
+        plt.title(title+title2)
         plt.show()
     return losses, test_accs
             

@@ -62,7 +62,17 @@ class Linear(Module):
     
     def param(self):
         return [[self.w, self.dw], [self.b, self.db]]
-            
+    
+    def reset_param(self):
+        """
+            Re-initialize the weights. This "unlearns" the weights to re-use 
+            the same instance across runs without having to make new instances
+        """
+        std = math.sqrt(2./(self.in_dim+self.out_dim))
+        self.w = torch.empty(self.in_dim,self.out_dim).normal_(0,std)
+        self.b = torch.empty(self.out_dim).normal_(0,std)
+        self.dw = torch.zeros(self.in_dim,self.out_dim)
+        self.db = torch.zeros(self.out_dim)
 
         
 #ACTIVATION FUNCTIONS
@@ -145,10 +155,8 @@ class CrossEntropyLoss(Module):
             large numbers or floats takes exp(x-max(x)) instead of exp(x)
         """
         maxVal,_ =torch.max(x,1,keepdim=True)
-        z = x- maxVal
-        exps = torch.exp(z)
-        Sum = exps.sum(1,keepdim=True)
-        return (exps/Sum)
+        exps = torch.exp(x- maxVal)
+        return exps/(exps.sum(1,keepdim=True))
     
     def forward(self,x,t):
         """
@@ -158,19 +166,17 @@ class CrossEntropyLoss(Module):
             and pj = softmax(x)_j
             log(p)*t does the element-wise product then we sum
         """
-        p = self.softmax(x)
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
-        sumResult = -torch.sum(p.log()*t)
-        return sumResult
+        return -torch.sum((self.softmax(x).log())*t)
+        
     
     def backward(self,x,t):
         """
             computes dLoss 
             dl/dx_i = pi-yi from the slides
         """
-        p = self.softmax(x)
         t = convert_to_one_hot_labels(torch.tensor([0, 1]), t)
-        return (p-t)
+        return (self.softmax(x)-t)
 
 def convert_to_one_hot_labels(input, target):
     tmp = input.new_zeros(target.size(0), target.max() + 1)
