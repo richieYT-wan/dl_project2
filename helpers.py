@@ -68,7 +68,7 @@ def train_model_SGD(model, criterion,
         #Random sampling
         for b in list(torch.utils.data.BatchSampler(torch.utils.data.RandomSampler(range(train_input.size(0))),batch_size=mini_batch_size, drop_last=False)):
             output = model(train_input[b])
-            loss = criterion(output, train_target[b])
+            loss = criterion(output, train_target[b])/1000
             model.zero_grad()
             model.backward(criterion.backward(output, train_target[b]))
             if not momentum:
