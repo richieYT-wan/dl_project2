@@ -130,6 +130,9 @@ def train_model_SGD(model, criterion,
         plt.legend(plts, labs, loc='center right')
         plt.title(title+title2)
         plt.show()
+
+        fig.savefig('trainloss_testacc.png', dpi=600)
+        
     return losses, test_accs
             
 def users_choices():
