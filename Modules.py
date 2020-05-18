@@ -20,6 +20,7 @@ class Module() :
     def __call__(self, *input):
         return self.forward(*input)
     
+#-------Fully Connected Layer-------#
 class Linear(Module):
     """
         One fully connected layer.
@@ -87,7 +88,7 @@ class Linear(Module):
         self.db = torch.zeros(self.out_dim)
 
         
-#ACTIVATION FUNCTIONS
+#-------Activation Functions-------#
 """
     dl_dx : Derivative of loss wrt x
     dl_ds : Derivative of loss wrt s
@@ -180,7 +181,7 @@ class Softmax(Module):
         return dl_dx*(self.forward(self.current)-(self.forward(self.current)).pow(2))
     
 
-#----------------Loss criterions---------------
+#-------Loss Criterions-------#
 class MSE(Module):
     """
         Defines the MSE loss (L2 criterion)
