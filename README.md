@@ -6,7 +6,7 @@ To see our work and results, just run the `test.py` file, and follow the guideli
 
 
 ## Prerequisites
-Python 3.7 
+Python 3.7 <br/>
 PyTorch
 
 ## Dataset 
