@@ -21,11 +21,11 @@ softmax = Modules.Softmax()
 
 # Model
 if (act_fun == 'relu'):
-    model = Sequential.Sequential(m1, relu, m2, relu, m3, tanh, m4, Modules.ReLu())
+    model = Modules.Sequential(m1, relu, m2, relu, m3, tanh, m4, relu)
 if (act_fun == 'tanh'):
-    model = Sequential.Sequential(m1, relu, m2, relu, m3, relu, m4, Modules.Tanh())
+    model = Modules.Sequential(m1, relu, m2, relu, m3, relu, m4, tanh)
 if (act_fun == 'softmax'):
-    model = Sequential.Sequential(m1, relu, m2, relu, m3, relu, m4, Modules.Softmax())
+    model = Modules.Sequential(m1, relu, m2, relu, m3, relu, m4, softmax)
 
 model.reset_param()
 

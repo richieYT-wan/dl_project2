@@ -3,7 +3,6 @@ import torch
 import math
 import Modules
 import Optimizer
-import Sequential
 
 def plot_data(data, labels):
         
@@ -65,7 +64,8 @@ def train_model_SGD(model, criterion,
             eta = eta * math.pow(adaptive,math.floor((1+e)/epochs_drop))
         
         #Random sampling
-        for b in list(torch.utils.data.BatchSampler(torch.utils.data.RandomSampler(range(train_input.size(0))),batch_size=mini_batch_size, drop_last=False)):
+        indexes = torch.randperm(train_input.size(0)).tolist()
+        for b in list(indexes[x:x+mini_batch_size] for x in range(0, len(indexes), mini_batch_size)):
             output = model(train_input[b])
             loss = criterion(output, train_target[b])
             model.zero_grad()
@@ -81,7 +81,8 @@ def train_model_SGD(model, criterion,
         sum_error = 0
         predicted_test_classes = []
         data_plot = []
-        for t in list(torch.utils.data.BatchSampler(torch.utils.data.RandomSampler(range(test_input.size(0))), batch_size=mini_batch_size, drop_last=False)):
+        indexes = torch.randperm(test_input.size(0)).tolist()
+        for t in list(indexes[x:x+mini_batch_size] for x in range(0, len(indexes), mini_batch_size)):
             test_out = model(test_input[t])
             predicted_test_batch_classes = test_out.max(1)[1]
             nb_errors = torch.where(test_target[t] != predicted_test_batch_classes)[0].size(0)
