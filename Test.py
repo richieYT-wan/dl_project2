@@ -7,7 +7,7 @@ data, target, data_test, target_test = generate_disc_set(nb_sample=1000, show_da
 act_fun, criter, lr, adapt_lrd, wd, plot, plot_classif = users_choices()
 
 # Parameters
-nb_epochs = 100 #500
+nb_epochs = 500
 mini_batch_size = 50
 
 # Modules
@@ -27,6 +27,8 @@ if (act_fun == 'tanh'):
 if (act_fun == 'softmax'):
     model = Sequential.Sequential(m1, relu, m2, relu, m3, relu, m4, Modules.Softmax())
 
+model.reset_param()
+
 # Loss criterions
 if (criter == 'cross entropy'):
     criterion = Modules.CrossEntropyLoss()
@@ -34,8 +36,6 @@ if (criter == 'MSE'):
     criterion = Modules.MSE()
 
 # Train model
-
 losses, test_accs = train_model_SGD(model, criterion, data, target, data_test, target_test,
                                     mini_batch_size, nb_epochs, eta=lr, wd=wd,  
-                                    adaptive=adapt_lrd, momentum=False,
-                                    plot_loss=plot, plot_points=plot_classif)
+                                    adaptive=adapt_lrd, plot_loss=plot, plot_points=plot_classif)

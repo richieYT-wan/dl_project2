@@ -31,8 +31,7 @@ def generate_disc_set(nb_sample, show_data=False):
 
 def train_model_SGD(model, criterion, 
                     train_input, train_target, test_input, test_target,
-                    mini_batch_size, nb_epochs, eta = 1e-4, wd = None, 
-                    momentum = False, adaptive = False,
+                    mini_batch_size=50, nb_epochs=500, eta = 1e-4, wd = 1e-7, adaptive = False,
                     plot_loss = False, plot_points = False):
     """
         Function to train a given model, criterion.
@@ -68,16 +67,14 @@ def train_model_SGD(model, criterion,
         #Random sampling
         for b in list(torch.utils.data.BatchSampler(torch.utils.data.RandomSampler(range(train_input.size(0))),batch_size=mini_batch_size, drop_last=False)):
             output = model(train_input[b])
-            loss = criterion(output, train_target[b])/1000
+            loss = criterion(output, train_target[b])
             model.zero_grad()
             model.backward(criterion.backward(output, train_target[b]))
-            if not momentum:
-                optim = Optimizer.SGD(model.param(),eta=eta,wd=wd)
-            if momentum:
-                optim = Optimizer.SGD_momentum(model.param(),eta=eta,wd=wd,gamma=momentum)
+            optim = Optimizer.SGD(model.param(),eta=eta,wd=wd)
             optim.step()
             sum_loss += loss.item()
-    
+        
+        sum_loss = sum_loss/1000
         losses.append(sum_loss)
         
         #test
