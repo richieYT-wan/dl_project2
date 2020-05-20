@@ -10,7 +10,7 @@ Python 3.7
 PyTorch
 
 ## Dataset 
-The data-set is generated as 1000 points randomly distributed in $[0,1]\times[0,1]$. A point is labeled 1 if it is inside a circle of radius $\frac{1}{\sqrt{2\pi}}$ centered at $(0.5,0.5)$, and 0 outside.
+The data-set is generated as 1000 points randomly distributed in [0,1]x[0,1]. A point is labeled 1 if it is inside a circle of radius 1/sqrt(2π) centered at (0.5,0.5), and 0 outside.
 
 # Organisation of the repository
 
