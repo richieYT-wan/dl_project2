@@ -143,11 +143,11 @@ def users_choices():
         print("OK: Let's choose!")
     if (choose == 'no'):
         print('OK: Our best model will be run')   
-        act_fun='softmax'
+        act_fun='tanh'
         criter='cross entropy' 
-        lr=5e-2
+        lr=4e-3
         adapt_lrd=0.9 
-        wd=1e-7
+        wd=1e-6
         plot=True
         plot_classif=False
         print('\n', 'Last layer activation function:', act_fun, '\n', 'Loss criterion:', criter, '\n', 'Learning rate:', lr, '\n', 
@@ -178,49 +178,49 @@ def users_choices():
     print('\n')
 
     # choose learning rate
-    lr = input("Please choose a learning rate in the range [1e-7, 10].\n>")
-    while (float(lr) > 10 or float(lr) < 1e-7):
+    lr = input("Please choose a learning rate in the range [1e-7, 1e-1].\n>")
+    while (float(lr) > 1e-1 or float(lr) < 1e-7):
         print('ERROR:', lr, 'is not valid!')
-        lr = input('Please choose again between in the range [1e-7, 10].\n>')       
-    if (float(lr) <= 10 and float(lr) >= 1e-7):
+        lr = input('Please choose again between in the range [1e-7, 1e-1].\n>')       
+    if (float(lr) <= 1e-1 and float(lr) >= 1e-7):
         lr = float(lr)
         print('OK:', lr, 'is selected as learning rate.')
 
     print('\n')
     
     # choose adaptive learning rate or not
-    adapt_lrd = input("Please choose a decay value for adaptive learning rate decay in the range [1e-3, 10] or write 'no'.\n>")
+    adapt_lrd = input("Please choose a decay value for adaptive learning rate decay in the range [1e-1, 1] or write 'no'. Typical values range from 0.5 to 0.9.\n>")
     if (adapt_lrd == 'no'):
         adapt_lrd = False
         print('OK: adapative learning rate decay won\'t be used.') 
     if (adapt_lrd != False):
-        while (float(adapt_lrd) > 10 or float(adapt_lrd) < 1e-3):
+        while (float(adapt_lrd) > 1 or float(adapt_lrd) < 1e-1):
             print('ERROR:', adapt_lrd, 'is not valid!')
             adapt_lrd = input("Please choose again in the range [1e-3, 10] or write 'no'.\n>")   
             if (adapt_lrd == 'no'):
                 adapt_lrd = False
                 print('OK: adapative learning rate decay won\'t be used.') 
                 break
-        if (float(adapt_lrd) <= 10 and float(adapt_lrd) >= 1e-3):
+        if (float(adapt_lrd) <= 1 and float(adapt_lrd) >= 1e-1):
             adapt_lrd = float(adapt_lrd)
             print('OK:', adapt_lrd, 'is selected as learning rate decay.')
 
     print('\n')
     
     # choose weight decay or not
-    wd = input("Please choose a weight decay in the range [1e-10, 1] or write 'no'.\n>")
+    wd = input("Please choose a weight decay in the range [1e-10, 1e-5] or write 'no'.\n>")
     if (wd == 'no'):
         wd = False
         print('OK: weight decay won\'t be used.') 
     if (wd != False):
-        while (float(wd) > 1 or float(wd) < 1e-10):
+        while (float(wd) > 1e-5 or float(wd) < 1e-10):
             print('ERROR:', wd, 'is not valid!')
-            wd = input("Please choose again in the range [1e-10, 1] or write 'no'.\n>")   
+            wd = input("Please choose again in the range [1e-10, 1e-5] or write 'no'.\n>")   
             if (wd == 'no'):
                 wd = False
                 print('OK: weight decay won\'t be used.') 
                 break
-        if (float(wd) <= 1 and float(wd) >= 1e-10):
+        if (float(wd) <= 1e-5 and float(wd) >= 1e-10):
             wd = float(wd)
             print('OK:', wd, 'is selected as weight decay.')    
 
