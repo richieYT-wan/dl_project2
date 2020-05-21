@@ -3,6 +3,7 @@ import torch
 import math
 import Modules
 import Optimizer
+import os
 
 def plot_data(data, labels):
 
@@ -130,7 +131,10 @@ def train_model_SGD(model, criterion,
         plt.title(title+title2)
         plt.show()
 
-        fig.savefig('trainloss_testacc.png', dpi=600)
+        if not os.path.exists('../figures'):
+            os.makedirs('../figures')
+        
+        fig.savefig('../figures/trainloss_testacc.png', dpi=600)
         
     return losses, test_accs
             
