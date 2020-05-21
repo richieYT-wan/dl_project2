@@ -2,7 +2,7 @@
 
 The aim of this project was to build a mini deep-learning framework using only PyTorch's basic tensor operations and to develop with it an MLP that would be able to classify points inside or outside a circle of a given radius. The implemented network is composed of three fixed hidden layers of 25 units. Different loss criterions and activation functions are available in the framework.
 
-To see our work and results, just run the `test.py` file, and follow the guidelines of the user-interface we implemented.
+To see our work and results, just run the `test.py` file (in src folder), and follow the guidelines of the user-interface we implemented.
 
 
 ## Prerequisites
