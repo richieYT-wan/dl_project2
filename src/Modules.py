@@ -26,6 +26,7 @@ class Sequential(Module):
         For example, pass linear, relu to it, it will be stored within its attribute "members"
         the attribute memory is used to save the operations in the order in which they were done
         to allow backprop. It also stores the parameters of its content in its own self.parameters.
+        Sadly, can't create a Sequential Object from multiple Sequential objects, only other Modules.
     """
     def __init__(self,*Modules):
         super(Sequential, self).__init__()
