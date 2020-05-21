@@ -22,10 +22,14 @@ softmax = Modules.Softmax()
 # Model
 if (act_fun == 'relu'):
     model = Modules.Sequential(m1, relu, m2, tanh, m3, tanh, m4, relu)
+    model.reset_param()
 if (act_fun == 'tanh'):
     model = Modules.Sequential(m1, relu, m2, tanh, m3, tanh, m4, tanh)
 if (act_fun == 'softmax'):
     model = Modules.Sequential(m1, relu, m2, tanh, m3, tanh, m4, softmax)
+
+model.reset_param()
+
 # Loss criterions
 if (criter == 'cross entropy'):
     criterion = Modules.CrossEntropyLoss()
