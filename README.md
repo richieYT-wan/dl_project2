@@ -26,8 +26,8 @@ The data-set is generated as 1000 points randomly distributed in [0,1]x[0,1]. A 
 +---src                                           
 |
 |   helpers.py                                      > contains functions to plot, generate data and train model
-|   Modules.py                                      > class Modules w/ children Linear, Activation functions and Loss criterions
+|   Modules.py                                      > class Modules and Sequential (+ Linear, Activation functions and Loss criterions)
 |   Optimizer.py                                    > class Optimizer w/ SGD available 
-|   Test.py                                         > runs our best model / runs model with parameters chosen by the user			                              
+|   Test.py                                         > runs our best model / runs model chosen by user			                              
 |
 ```  
