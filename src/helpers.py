@@ -4,31 +4,41 @@ import math
 import Modules
 import Optimizer
 import os
-
 def plot_data(data, labels):
-
-    data_out = data[torch.where(labels==1)]
-    data_in = data[torch.where(labels==0)]
+    """
+        Plots all the points of the dataset.
+        Points with label 1 are inside a circle of radius 1/sqrt(2pi) centered at (0.5,0.5) and in red.
+        Points with label 0 are outside the circle and in black.
+    """
+    data_out = data[torch.where(labels==0)]
+    data_in = data[torch.where(labels==1)]
 
     plt.figure(figsize=(6,6))
 
-    plt.scatter(data_out[:,0],data_out[:,1], color='k', label='label 1 - outside')
-    plt.scatter(data_in[:,0], data_in[:,1], color='r', label='label 0 - inside')
+    plt.scatter(data_out[:,0],data_out[:,1], color='k', label='label 0 - outside')
+    plt.scatter(data_in[:,0], data_in[:,1], color='r', label='label 1 - inside')
     plt.legend(bbox_to_anchor=(0.5, 1.13), loc='upper center')
     plt.show(block=False)
-    
+
 def generate_disc_set(nb_sample, show_data=False):
-    
-    data = torch.empty(nb_sample, 2).uniform_(0, 1)
-    labels = data.sub(0.5).pow(2).sum(1).sub(1/(2*math.pi)).sign().add(1).div(2).long()
-    
-    data_test = torch.empty(nb_sample, 2).uniform_(0, 1)
-    labels_test = data_test.sub(0.5).pow(2).sum(1).sub(1/(2*math.pi)).sign().add(1).div(2).long()
-    
+    """
+        Generates a disc data_set.
+        Input : nb_sample [int]
+        output : Training Dataset composed of nb_samples point uniformly distributed between 0,1 
+                 Training Labels of size nb_samples, = 0 or 1
+                 Test dataset and its label.
+    """
+    data = torch.empty(nbsample, 2).uniform(0, 1)
+    labels = (data.sub(0.5).pow(2).sum(1) <= (1/(2math.pi))).long()
+
+    data_test = torch.empty(nbsample, 2).uniform(0, 1)
+    labels_test = (data_test.sub(0.5).pow(2).sum(1) <= (1/(2math.pi))).long()
+
     if show_data:
         plot_data(data, labels)
 
     return data, labels, data_test, labels_test
+
 
 def train_model_SGD(model, criterion, 
                     train_input, train_target, test_input, test_target,
@@ -56,6 +66,11 @@ def train_model_SGD(model, criterion,
     """
     losses = []
     test_accs = []
+    # Note : The optimizer is initialized at each epoch with parameters of the model 
+    # after backward due to issues with the implementation of how parameters are accessed in memory
+    # There was an issue where the gradient was updated in the backward, but since Optimizer
+    # was initialized before the backward, it had a copy of the parameters with null gradients
+    # as attribute and therefore performed the gradient step with 0 change.
     for e in range(nb_epochs):
         
         #train
