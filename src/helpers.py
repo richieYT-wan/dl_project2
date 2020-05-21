@@ -135,6 +135,9 @@ def train_model_SGD(model, criterion,
     return losses, test_accs
             
 def users_choices():
+    print('First figure shows the training set.')
+    print('\n')
+
     # offer to the user the choice to choose his parameters
     choose = input("Do you want to choose your model [yes/no] (if not our best model will run)?\n> ")
     while (choose != 'yes' and choose != 'no'):
